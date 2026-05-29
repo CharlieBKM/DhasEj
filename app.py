@@ -10,7 +10,7 @@ import pandas as pd
 import plotly.express as px
 
 # 1. Configuración de la página
-st.set_page_config(page_title="Dashboard de Encuestas", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Análisis", page_icon="📊", layout="wide")
 
 # 2. Función para cargar el archivo .sav
 @st.cache_data
@@ -20,7 +20,7 @@ def cargar_datos_sav(archivo):
     return df
 
 # 3. Título del Dashboard
-st.title("📊 Dashboard de Encuestas Dinámico")
+st.title("📊 Para Análisis de Encuestas")
 st.markdown("Sube tu archivo de SPSS (.sav) en la barra lateral para comenzar el análisis.")
 st.write("---")
 
