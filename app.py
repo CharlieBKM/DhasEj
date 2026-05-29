@@ -8,6 +8,7 @@ Created on Thu May 28 09:42:06 2026
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import pyreadstat
 
 # 1. Configuración de la página
 st.set_page_config(page_title="Análisis", page_icon="📊", layout="wide")
