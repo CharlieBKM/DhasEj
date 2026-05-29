@@ -130,5 +130,5 @@ if archivo_subido is not None:
 
 else:
     # Mensaje de espera si no se ha subido nada
-    st.info("👋 Por favor, sube un archivo con extensión `.sav` desde la barra lateral para generar el reporte.")
+    st.info("👋 Por favor, despliega la barra lateral y sube un archivo con extensión `.sav` para generar el reporte.")
 
