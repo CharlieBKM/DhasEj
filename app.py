@@ -21,7 +21,7 @@ def cargar_datos_sav(archivo):
     return df
 
 # 3. Título del Dashboard
-st.title("📊 Para Análisis de Encuestas")
+st.title("📊 Para Análisis")
 st.write("---")
 
 # 4. Barra Lateral (Sidebar) para Carga de Archivos y Filtros
