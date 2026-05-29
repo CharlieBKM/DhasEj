@@ -22,7 +22,6 @@ def cargar_datos_sav(archivo):
 
 # 3. Título del Dashboard
 st.title("📊 Para Análisis de Encuestas")
-st.markdown("Despliega la barra lateral y Sube tu archivo de SPSS (.sav) para comenzar el análisis")
 st.write("---")
 
 # 4. Barra Lateral (Sidebar) para Carga de Archivos y Filtros
