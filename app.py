@@ -11,7 +11,7 @@ import numpy as np
 import plotly.express as px
 
 # 1. Configuración de la página
-st.set_page_config(page_title="Dashboard de Ventas", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Dashboard E1", page_icon="📊", layout="wide")
 
 # 2. Generación de datos de prueba (Simulación)
 @st.cache_data
@@ -33,8 +33,8 @@ def cargar_datos():
 df = cargar_datos()
 
 # 3. Título del Dashboard
-st.title("📊 Dashboard Interactivo de Ventas")
-st.markdown("Bienvenido al panel de control. Filtra los datos usando la barra lateral.")
+st.title("📊 Ejemplo de filtrado")
+st.markdown("Panel de control. Filtra los datos usando la barra lateral.")
 st.write("---")
 
 # 4. Barra Lateral (Sidebar) para Filtros
