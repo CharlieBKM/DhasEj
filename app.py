@@ -33,8 +33,8 @@ def cargar_datos():
 df = cargar_datos()
 
 # 3. Título del Dashboard
-st.title("📊 Ejemplo de filtrado")
-st.markdown("Panel de control. Filtra los datos usando la barra lateral.")
+st.title("📊 Desglose")
+st.markdown("Filtra los datos usando la barra lateral.")
 st.write("---")
 
 # 4. Barra Lateral (Sidebar) para Filtros
