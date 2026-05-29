@@ -11,18 +11,18 @@ import numpy as np
 import plotly.express as px
 
 # 1. Configuración de la página
-st.set_page_config(page_title="Dashboard de Ventas", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Informe de Negocio SMART BKM Sol.", page_icon="📊", layout="wide")
 
 # 2. Generación de datos de prueba (Simulación)
 @st.cache_data
 def cargar_datos():
     np.random.seed(42)
     fechas = pd.date_range(start="2026-01-01", periods=100, freq="D")
-    productos = ["Producto A", "Producto B", "Producto C"]
-    regiones = ["Norte", "Sur", "Este", "Oeste"]
+    productos = ["Accesorios", "Armas BMG", "Municiones"]
+    regiones = ["Norte", "Sur", "Este"]
     
     datos = {
-        "Fecha": np.random.choice(fechas, 500),
+        "Fecha": np.random.choice(fechas, 200),
         "Producto": np.random.choice(productos, 500),
         "Región": np.random.choice(regiones, 500),
         "Ventas": np.random.randint(100, 1000, 500),
