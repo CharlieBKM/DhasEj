@@ -7,97 +7,128 @@ Created on Thu May 28 09:42:06 2026
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 
 # 1. Configuración de la página
-st.set_page_config(page_title="Dashboard E1", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Dashboard de Encuestas", page_icon="📊", layout="wide")
 
-# 2. Generación de datos de prueba (Simulación)
+# 2. Función para cargar el archivo .sav
 @st.cache_data
-def cargar_datos():
-    np.random.seed(42)
-    fechas = pd.date_range(start="2026-01-01", periods=100, freq="D")
-    productos = ["Producto 1", "Producto 2", "Producto 3"]
-    regiones = ["Norte", "Sur", "Este", "Oeste"]
-    
-    datos = {
-        "Fecha": np.random.choice(fechas, 500),
-        "Producto": np.random.choice(productos, 500),
-        "Región": np.random.choice(regiones, 500),
-        "Ventas": np.random.randint(100, 1000, 500),
-        "Ganancia": np.random.randint(20, 300, 500)
-    }
-    return pd.DataFrame(datos)
-
-df = cargar_datos()
+def cargar_datos_sav(archivo):
+    # pyreadstat lee el archivo; regresamos solo el DataFrame
+    df = pd.read_spss(archivo)
+    return df
 
 # 3. Título del Dashboard
-st.title("📊 Desglose")
-st.markdown("Filtra los datos usando la barra lateral.")
+st.title("📊 Dashboard de Encuestas Dinámico")
+st.markdown("Sube tu archivo de SPSS (.sav) en la barra lateral para comenzar el análisis.")
 st.write("---")
 
-# 4. Barra Lateral (Sidebar) para Filtros
-st.sidebar.header("Filtros Disponibles")
-region_seleccionada = st.sidebar.multiselect(
-    "Selecciona la Región:",
-    options=df["Región"].unique(),
-    default=df["Región"].unique()
-)
+# 4. Barra Lateral (Sidebar) para Carga de Archivos y Filtros
+st.sidebar.header("📁 Carga de Datos")
+archivo_subido = st.sidebar.file_uploader("Selecciona un archivo .sav", type=["sav"])
 
-producto_seleccionado = st.sidebar.multiselect(
-    "Selecciona el Producto:",
-    options=df["Producto"].unique(),
-    default=df["Producto"].unique()
-)
-
-# Aplicar filtros a los datos
-df_filtrado = df[(df["Región"].isin(region_seleccionada)) & (df["Producto"].isin(producto_seleccionado))]
-
-# 5. Métricas Clave (KPIs)
-col1, col2, col3 = st.columns(3)
-
-if not df_filtrado.empty:
-    total_ventas = df_filtrado["Ventas"].sum()
-    total_ganancias = df_filtrado["Ganancia"].sum()
-    margen_promedio = (total_ganancias / total_ventas) * 100
+# Control de flujo: Si hay archivo, procesamos; si no, mostramos advertencia.
+if archivo_subido is not None:
+    df = cargar_datos_sav(archivo_subido)
     
-    col1.metric(label="Ventas Totales", value=f"${total_ventas:,}")
-    col2.metric(label="Ganancias Totales", value=f"${total_ganancias:,}")
-    col3.metric(label="Margen Promedio", value=f"{margen_promedio:.1f}%")
+    st.sidebar.write("---")
+    st.sidebar.header("Filtros Disponibles")
+    
+    # Al ser una encuesta externa, dejamos que el usuario elija qué columnas filtrar
+    columnas_disponibles = df.columns.tolist()
+    
+    col_filtro_1 = st.sidebar.selectbox("1. Variable para filtrar (Categoría A):", columnas_disponibles, index=0)
+    opciones_filtro_1 = st.sidebar.multiselect(
+        f"Valores de {col_filtro_1}:",
+        options=df[col_filtro_1].dropna().unique(),
+        default=df[col_filtro_1].dropna().unique()
+    )
+    
+    # Intentamos seleccionar una segunda columna diferente por defecto si existe
+    indice_defecto = min(1, len(columnas_disponibles) - 1)
+    col_filtro_2 = st.sidebar.selectbox("2. Variable para filtrar (Categoría B):", columnas_disponibles, index=indice_defecto)
+    opciones_filtro_2 = st.sidebar.multiselect(
+        f"Valores de {col_filtro_2}:",
+        options=df[col_filtro_2].dropna().unique(),
+        default=df[col_filtro_2].dropna().unique()
+    )
+
+    # Aplicar filtros dinámicos
+    df_filtrado = df[
+        (df[col_filtro_1].isin(opciones_filtro_1)) & 
+        (df[col_filtro_2].isin(opciones_filtro_2))
+    ]
+
+    # 5. Métricas Clave (KPIs básicas para encuestas)
+    col1, col2, col3 = st.columns(3)
+    
+    if not df_filtrado.empty:
+        total_respuestas = len(df_filtrado)
+        total_original = len(df)
+        porcentaje_Muestra = (total_respuestas / total_original) * 100
+        
+        col1.metric(label="Muestra Filtrada (n)", value=f"{total_respuestas:,}")
+        col2.metric(label="Muestra Total Original", value=f"{total_original:,}")
+        col3.metric(label="% del Total", value=f"{porcentaje_Muestra:.1f}%")
+    else:
+        st.warning("No hay datos que coincidan con los filtros seleccionados.")
+
+    st.write("---")
+
+    # 6. Gráficos Interactivos Adaptables
+    st.subheader("📊 Análisis Visual de la Encuesta")
+    
+    columnas_numericas = df_filtrado.select_dtypes(include=['number']).columns.tolist()
+    
+    col_graf1, col_graf2 = st.columns(2)
+
+    with col_graf1:
+        st.write(f"### Distribución de: {col_filtro_1}")
+        # Conteo de frecuencias para encuestas
+        df_conteo = df_filtrado[col_filtro_1].value_counts().reset_index()
+        df_conteo.columns = [col_filtro_1, 'Frecuencia']
+        
+        fig_bar = px.bar(
+            df_conteo, 
+            x=col_filtro_1, 
+            y="Frecuencia", 
+            color=col_filtro_1,
+            title=f"Cantidad de respuestas por {col_filtro_1}"
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+    with col_graf2:
+        st.write("### Cruce de Variables / Tendencia")
+        if columnas_numericas:
+            # Si hay variables numéricas (ej. Edad, Escala de satisfacción), permitimos graficarla
+            var_num = st.selectbox("Selecciona una variable numérica para el eje Y:", columnas_numericas)
+            fig_box = px.box(
+                df_filtrado, 
+                x=col_filtro_2, 
+                y=var_num, 
+                color=col_filtro_2,
+                title=f"Distribución de {var_num} según {col_filtro_2}"
+            )
+            st.plotly_chart(fig_box, use_container_width=True)
+        else:
+            # Si no hay numéricas, hacemos un gráfico de pastel del segundo filtro
+            df_conteo2 = df_filtrado[col_filtro_2].value_counts().reset_index()
+            df_conteo2.columns = [col_filtro_2, 'Frecuencia']
+            fig_pie = px.pie(
+                df_conteo2, 
+                names=col_filtro_2, 
+                values="Frecuencia", 
+                title=f"Proporción de {col_filtro_2}"
+            )
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+    # 7. Vista de la Tabla de Datos
+    st.write("---")
+    st.subheader("📋 Vista previa de los datos filtrados")
+    st.dataframe(df_filtrado, use_container_width=True)
+
 else:
-    st.warning("No hay datos que coincidan con los filtros seleccionados.")
-
-st.write("---")
-
-# 6. Gráficos Interactivos
-col_graf1, col_graf2 = st.columns(2)
-
-with col_graf1:
-    st.subheader("Ventas por Producto")
-    fig_bar = px.bar(
-        df_filtrado, 
-        x="Producto", 
-        y="Ventas", 
-        color="Región", 
-        barmode="group",
-        title="Total Ventas por Producto y Región"
-    )
-    st.plotly_chart(fig_bar, use_container_width=True)
-
-with col_graf2:
-    st.subheader("Evolución de Ventas en el Tiempo")
-    df_linea = df_filtrado.groupby("Fecha")["Ventas"].sum().reset_index()
-    fig_line = px.line(
-        df_linea, 
-        x="Fecha", 
-        y="Ventas", 
-        title="Tendencia de Ventas Diarias"
-    )
-    st.plotly_chart(fig_line, use_container_width=True)
-
-# 7. Vista de la Tabla de Datos
-st.write("---")
-st.subheader("📋 Vista previa de los datos filtrados")
-st.dataframe(df_filtrado, use_container_width=True)
+    # Mensaje de espera si no se ha subido nada
+    st.info("👋 Por favor, sube un archivo con extensión `.sav` desde la barra lateral para generar el reporte.")
 
